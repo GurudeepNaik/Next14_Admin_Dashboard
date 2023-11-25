@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+// Define the User model
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+}
+
+// Define the Customer model
+model Customer {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  imageUrl  String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  // Define a relation from Customer to Invoice
+  invoices Invoice[]
+}
+
+// Define the Invoice model
+model Invoice {
+  id         String        @id @default(uuid()) @db.Uuid
+  customerId String        @db.Uuid
+  amount     Int
+  status     InvoiceStatus
+  date       DateTime
+  createdAt  DateTime      @default(now()) @db.Timestamp(6)
+
+  // Define a relation from Invoice to Customer
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+}
+
+// Define the Revenue model
+model Revenue {
+  month     String   @id
+  revenue   Int
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+}
